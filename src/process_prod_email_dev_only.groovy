@@ -13,6 +13,8 @@ import org.jsoup.nodes.Document;
 import javax.mail.*
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
+import groovy.lang.Binding
+
 import ProxyAuthenticator
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.datapipeline.DataPipelineClient;
@@ -26,7 +28,8 @@ import com.amazonaws.services.datapipeline.model.ValidatePipelineDefinitionReque
 import com.amazonaws.services.datapipeline.model.ValidatePipelineDefinitionResult;
 import com.amazonaws.services.datapipeline.model.ValidationError
 
-import javax.security.auth.login.Configuration;
+
+
 
 
 
@@ -154,12 +157,20 @@ props.setProperty("mail.pop3s.socketFactory.fallback", "false");
 props.setProperty("mail.pop3s.socketFactory.port", config.emailPort + "");
 props.setProperty("mail.pop3.forgettopheaders", "true");
 
+Binding binding = new Binding();
+int x = 1
+for (a in this.args) {
+    println("arg$x: " + a)
+    binding.setProperty("arg$x", a);
+    x=x+1
+}
+
 System.out.println("Connecting to mail server..............");
 
 Session session = Session.getInstance(props, null);
 try {
-    Store store = session.getStore(config.emailProtocol);
-    store.connect(config.emailHost, config.emailPort, config.emailUserName, config.emailPassword);
+    Store store = session.getStore(config.emailProtocol)
+    store.connect(config.emailHost, config.emailPort, binding.getProperty("arg1"), binding.getProperty("arg2"))
     Folder inbox = store.getFolder("INBOX");
     inbox.open(Folder.READ_ONLY);
     FetchProfile fp = new FetchProfile();
